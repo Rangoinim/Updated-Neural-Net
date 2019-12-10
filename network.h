@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <vector>
 
 using namespace std;
 
@@ -35,21 +36,20 @@ using namespace std;
  */
 
 //you may or may not need these two
-#define ON 1.0
-#define OFF 0.0
+//#define ON 1.0
+//#define OFF 0.0
 
 //you may or may not need these two
-#define OFFSOFT 0.1
-#define ONSOFT 0.9
+//#define OFFSOFT 0.1
+//#define ONSOFT 0.9
 
-#define I_UNITS 2
-#define H_UNITS 2
-#define O_UNITS 1
-#define IOPAIRS 4
-
-#define MAX_EPOCH 1000
-#define LR .35
-#define EE 2.718281828
+/*struct cfgParams {
+    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch;
+    float off, on;
+    float offSoft, onSoft;
+    float learnRate;
+    float ee;
+};*/
 
 /* input layer consisting of activations x (neurons) and weights w
    to the hidden layer. these are created as pointers that will be allocated
