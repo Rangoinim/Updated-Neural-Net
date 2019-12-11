@@ -4,6 +4,7 @@
 #include "main.h"
 
 int main(int argc, char **argv) {
+    NNetwork neuralNet;
     /*if (argc > 1) {
         filename = argv[1];
         if (dumpToArray(filename, &contents)) {
@@ -31,4 +32,7 @@ int main(int argc, char **argv) {
         cout << setprecision(2) << config.learnRate << endl;
         cout << setprecision(10) << config.ee << endl;
         }*/
+    cout << "hey gamers" << endl;
+    neuralNet.displayInputLayerWeights();
+    neuralNet.displayHiddenLayerWeights();
 }
