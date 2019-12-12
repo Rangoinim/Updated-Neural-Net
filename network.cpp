@@ -9,6 +9,7 @@ NNetwork::NNetwork() {
     cout.precision(4);
 
     nNetwork = new nNet;
+    inputLength = 1;
 
     loadCfgParams();
     buildInputLayer();
@@ -27,7 +28,6 @@ NNetwork::~NNetwork() {
  * to the functionality of the network.
  */
 void NNetwork::displayInputLayerWeights() {
-    cout << "Input Layer Weights" << endl;
     for (int i=0;i < inUnits+1; i++) {
         for (int j=0;j < hidUnits; j++) {
            cout << nNetwork->inputLayer.w[i][j] << " ";
@@ -36,7 +36,6 @@ void NNetwork::displayInputLayerWeights() {
     }
 }
 void NNetwork::displayHiddenLayerWeights() {
-    cout << "Hidden Layer Weights" << endl;
     for (int i=0;i < hidUnits+1; i++) {
         for (int j=0;j < outUnits; j++) {
             cout << nNetwork->hiddenLayer.w[i][j] << " ";
@@ -45,7 +44,6 @@ void NNetwork::displayHiddenLayerWeights() {
     }
 }
 void NNetwork::displayInputActivations() {
-    
 
 }
 void NNetwork::displayHiddenActivations() {
@@ -59,6 +57,50 @@ void NNetwork::displayTrainingInput() {
 }
 void NNetwork::displayTrainingOutput() {
 
+}
+bool NNetwork::loadIOFile() {
+    string line, token;
+    ifstream inFile;
+    inFile.open(filename);
+    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
+    {
+        string line;
+        int col = 0;
+        for(int i = 0; i < ioPairs; i++){
+            getline(inFile, line);
+            for(int j = 0; j < line.size(); j++){
+                if(line[j] != ' '){
+                    inputData[i][col] = line[j] - '0';
+                    cout << inputData[i][col] << " ";
+                    col++;
+                }
+            }
+            col = 0;
+            cout << endl;
+        }
+        for(int i = 0; i < ioPairs; i++){
+            getline(inFile, line);
+            for(int j = 0; j < line.size(); j++){
+                if(line[j] != ' '){
+                    outputData[i][col] = line[j] - '0';
+                    cout << outputData[i][col] << " ";
+                    col++;
+                }
+            }
+            col = 0;
+            cout << endl;
+        }
+        inFile.close();
+    }
+    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof())
+    {
+        inFile.close();
+    }
+    else
+    {
+        inFile.close();
+    }
+    return false;
 }
 
 //this calls all the private training methods
@@ -81,7 +123,48 @@ void NNetwork::saveweights() {
 void NNetwork::loadweights() {
 
 }
+//PRIVATE FUNCTIONS
 
+void NNetwork::scanFile() {
+    string line;
+    int spaceCount = 0;
+    int totalCount = 0;
+    ifstream inFile;
+    inFile.open(filename);
+    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
+    {
+        while (getline(inFile, line))
+        {
+            if (spaceCount == 0) {
+                for (int i = 0; i < line.size(); i++) {
+                    numInput = 0;
+                    if (line[i] == ' ') {
+                        spaceCount++;
+                    }
+                }
+                numInput = spaceCount + 1;
+            }
+            totalCount++;
+        }
+        spaceCount = 0;
+        for (int i=0; i < line.size(); i++) {
+            if (line[i] == ' ') {
+                spaceCount++;
+            }
+        }
+        numOutput = spaceCount+1;
+        ioPairs = (totalCount / 2);
+        inFile.close();
+    }
+    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof())
+    {
+        inFile.close();
+    }
+    else
+    {
+        inFile.close();
+    }
+}
 // set-up methods to create and initialize the network and data
 float NNetwork::randomWeight() {
     return (rand()) / (RAND_MAX + 1.0) + (rand() % 2) - 1;
@@ -96,9 +179,14 @@ void NNetwork::loadCfgParams() {
     {
         while (getline(inFile, line))
         {
-            int location = line.find("=");
-            string strright = line.substr(location+1);
-            contents.push_back(stof(strright));
+            int location = line.find('=');
+            string token = line.substr(location+1);
+            if (isalpha(token[0])) {
+                filename = token;
+            }
+            else {
+                contents.push_back(stof(token));
+            }
         }
         inFile.close();
     }
@@ -113,25 +201,22 @@ void NNetwork::loadCfgParams() {
     inUnits = contents[0];
     hidUnits = contents[1];
     outUnits = contents[2];
-    ioPairs = contents[3];
-    maxEpoch = contents[4];
-    off = contents[5];
-    on = contents[6];
-    offSoft = contents[7];
-    onSoft = contents[8];
-    learnRate = contents[9];
-    ee = contents[10];
+    maxEpoch = contents[3];
+    off = contents[4];
+    on = contents[5];
+    offSoft = contents[6];
+    onSoft = contents[7];
+    learnRate = contents[8];
+    ee = contents[9];
     //cout << inUnits << ", " << hidUnits << ", " << outUnits << ", " << ioPairs << endl;
 }
 
 void NNetwork::buildInputLayer() {
-    cout << "hey" << endl;
     nNetwork->inputLayer.x = new float[inUnits+1];
     nNetwork->inputLayer.w = new float*[inUnits+1];
     for (int i=0;i < inUnits+1; i++) {
         nNetwork->inputLayer.w[i] = new float[hidUnits];
     }
-    cout << "dude" << endl;
     //bias node
     nNetwork->inputLayer.x[inUnits] = 1.0;
     for (int i=0;i < inUnits+1; i++) {
@@ -140,17 +225,14 @@ void NNetwork::buildInputLayer() {
             cout << nNetwork->inputLayer.w[i][j] << endl;
         }
     }
-    cout << "sup" << endl;
 }
 void NNetwork::buildHiddenLayer() {
-    cout << "does" << endl;
     nNetwork->hiddenLayer.x = new float[hidUnits+1];
     nNetwork->hiddenLayer.w = new float*[hidUnits+1];
-    nNetwork->hiddenLayer.e = new float[hidUnits];
+    nNetwork->hiddenLayer.e = new float[hidUnits+1];
     for (int i=0;i < hidUnits+1; i++) {
         nNetwork->hiddenLayer.w[i] = new float[outUnits];
     }
-    cout << "this" << endl;
     //bias node
     nNetwork->hiddenLayer.x[hidUnits] = 1.0;
     for (int i=0;i < hidUnits+1; i++) {
@@ -159,16 +241,23 @@ void NNetwork::buildHiddenLayer() {
             cout << nNetwork->hiddenLayer.w[i][j] << endl;
         }
     }
-    cout << "work" << endl;
 }
 void NNetwork::buildOutputLayer() {
-
+    nNetwork->outputLayer.x = new float[outUnits];
+    nNetwork->outputLayer.e = new float[outUnits];
 }
 void NNetwork::buildIOData() {
+    scanFile();
+    loadIOFile();
+    inputData = new float*[ioPairs];
+    for (int i=0; i < ioPairs; i++) {
+        inputData[i] = new float[numInput];
+    }
+    outputData = new float*[ioPairs];
+    for (int i=0; i < ioPairs; i++) {
+        outputData[i] = new float[numOutput];
+    }
 
-}
-bool NNetwork::loadIOFile() {
-    return false;
 }
 
 /* training methods used in train(). assignActivatons and propigateActivations

@@ -15,6 +15,7 @@
 #ifndef NNETWORK_H
 #define NNETWORK_H
 
+#include <cctype>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -85,6 +86,7 @@ struct nNet {
 
 class NNetwork {
 public:
+
     NNetwork();
     ~NNetwork();
 
@@ -100,6 +102,8 @@ public:
     void displayOutputActivations();
     void displayTrainingInput();
     void displayTrainingOutput();
+
+    bool loadIOFile();
 
     //this calls all the private training methods
     void train();
@@ -124,12 +128,14 @@ private:
 
     // basic data for the network. these are initialized in loadCfgParams()
     // or in your constructor or however you want to do it.
-    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch;
+    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch, numInput, numOutput, inputLength;
     float off, on;
     float offSoft, onSoft;
     float learnRate;
     float ee;
 
+    // Filename for the data file that the program is going to use
+    string filename;
     /* holds the data set for training. these are initialized in buildIOData()
        and loaded in loadIOFile() */
     float **inputData, **outputData;
@@ -138,13 +144,13 @@ private:
     nNet *nNetwork;
 
     // set-up methods to create and initialize the network and data
+    void scanFile();
     float randomWeight();
     void loadCfgParams();
     void buildInputLayer();
     void buildHiddenLayer();
     void buildOutputLayer();
     void buildIOData();
-    bool loadIOFile();
 
     /* training methods used in train(). assignActivatons and propigateActivations
        are also used in the test() method. depending on your implementation,

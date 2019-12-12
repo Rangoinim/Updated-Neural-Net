@@ -16,7 +16,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-//string filename;
+string filename;
 //vector<float> contents;
 
 #endif //FINALPROJECT_MAIN_H
