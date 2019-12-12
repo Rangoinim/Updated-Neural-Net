@@ -12,5 +12,14 @@ int main(int argc, char **argv) {
     neuralNet.displayHiddenLayerWeights();
     neuralNet.displayInputActivations();
     neuralNet.displayHiddenActivations();
-
+    cout << "now training..." << endl;
+    neuralNet.train();
+    cout << "training complete" << endl;
+    neuralNet.displayInputLayerWeights();
+    neuralNet.displayHiddenLayerWeights();
+    neuralNet.displayInputActivations();
+    neuralNet.displayHiddenActivations();
+    neuralNet.displayOutputActivations();
+    neuralNet.displayTrainingInput();
+    neuralNet.displayTrainingOutput();
 }

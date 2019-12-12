@@ -60,25 +60,41 @@ void NNetwork::displayHiddenActivations() {
     cout << endl;
 }
 void NNetwork::displayOutputActivations() {
-
+    cout << "Output Activations" << endl;
+    for (int i=0; i < outUnits; i++) {
+        cout << nNetwork->outputLayer.x[i] << " ";
+    }
+    cout << endl;
 }
 void NNetwork::displayTrainingInput() {
-
+    cout << "Training Input" << endl;
+    for (int i=0;i < ioPairs; i++) {
+        for (int j=0;j < numInput; j++) {
+            cout << inputData[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 void NNetwork::displayTrainingOutput() {
-
+    cout << "Training Output" << endl;
+    for (int i=0;i < ioPairs; i++) {
+        for (int j=0;j < numOutput; j++) {
+            cout << outputData[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
 //this calls all the private training methods
 void NNetwork::train() {
-//    for (int i=0; i < maxEpoch; i++) {
-//        for (int j=0; j < ioPairs; j++) {
-//            assignActivatons(j);
-//            propigateActivations();
-//            computeErrors(j);
-//            adjustWeights();
-//        }
-//    }
+    for (int i=0; i < maxEpoch; i++) {
+        for (int j=0; j < ioPairs; j++) {
+            assignActivatons(j);
+            propigateActivations();
+            computeErrors(j);
+            adjustWeights();
+        }
+    }
 
 }
 
@@ -293,14 +309,51 @@ bool NNetwork::loadIOFile() {
    compute errors may also be used in the test method, but do not use
    adjustWeights in the test method. */
 void NNetwork::assignActivatons(int j) {
-    
+    for (int i=0;i < inUnits; i++) {
+        nNetwork->inputLayer.x[i] = inputData[j][i];
+    }
 }
 void NNetwork::propigateActivations() {
-
+    for (int i=0;i < inUnits; i++) {
+        for (int j=0; j < hidUnits+1; j++) {
+            nNetwork->hiddenLayer.x[i] += (nNetwork->inputLayer.x[i] * nNetwork->inputLayer.w[i][j]);
+        }
+        //sigmoid me captain
+        nNetwork->hiddenLayer.x[i] = 1.0 / (1.0 + pow(ee, -(nNetwork->hiddenLayer.x[i])));
+    }
+    for (int i=0; i < outUnits; i++) {
+        for (int j=0; j < hidUnits+1; j++) {
+            nNetwork->outputLayer.x[i] += (nNetwork->hiddenLayer.x[j] * nNetwork->hiddenLayer.w[i][j]);
+        }
+        //sigmoid round two
+        nNetwork->outputLayer.x[i] = 1.0 / (1.0 + pow(ee, -(nNetwork->outputLayer.x[i])));
+    }
 }
-void NNetwork::computeErrors(int j) {
-
+void NNetwork::computeErrors(int current) {
+    int sum = 0;
+    for (int i=0; i < outUnits; i++) {
+        nNetwork->outputLayer.e[i] = nNetwork->outputLayer.x[i] * ((1.0 - nNetwork->outputLayer.x[i]) * (outputData[current][i] - nNetwork->outputLayer.x[i]));
+    }
+    for (int j=0; j < hidUnits; j++) {
+        for (int i=0; i < outUnits; i++) {
+            sum = sum + nNetwork->outputLayer.e[i] * nNetwork->hiddenLayer.w[j][i];
+        }
+        nNetwork->hiddenLayer.e[j] = (nNetwork->hiddenLayer.x[j] * (1 - nNetwork->hiddenLayer.x[j])) * sum;
+    }
 }
 void NNetwork::adjustWeights() {
+    int i, j;
 
+    for (i = 0; i < hidUnits+1; i++) {
+        for (j = 0; j < outUnits; j++) {
+            nNetwork->hiddenLayer.w[i][j] = nNetwork->hiddenLayer.w[i][j] + (learnRate * nNetwork->outputLayer.e[j] * nNetwork->hiddenLayer.x[i]);
+        }
+    }
+
+    for (i = 0; i < inUnits; i++) {
+        for (j = 0; j < hidUnits; j++) {
+            nNetwork->inputLayer.w[i][j] = nNetwork->inputLayer.w[i][j] + (learnRate * nNetwork->hiddenLayer.e[j] * nNetwork->inputLayer.x[i]);
+        }
+    }
 }
+
