@@ -127,12 +127,61 @@ void NNetwork::saveweights() {
             myfile << "\n";
         }
     }
+   myfile.close();
 }
 
 /* this loads weights from a saved weights file so you can re-load
  a trained network and use it, instead of retraining.*/
 void NNetwork::loadweights() {
-
+    string line;
+    ifstream inFile;
+    inFile.open("networkWeights.txt");
+    int start = 0;
+    int col = 0;
+    cout << "I'm knocking on the door" << endl;
+    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof()) {
+        cout << "I'm inside" << endl;
+        for (int i = 0; i < ioPairs; i++) {
+            getline(inFile, line);
+            line += "\n";
+            cout << line << endl;
+            for (int j = 0; j < line.size(); j++) {
+                cout << "j is " << j << endl;
+                if (line[j] == ' ' || line[j] == '\n') {
+                    cout << "newline or space found in index " << j << endl;
+                    string token = line.substr(start, j - start);
+                    cout << token << endl;
+                    //nNetwork->inputLayer.w[i][col] = stof(line.substr(start, j - start));
+                    start = j;
+                    col++;
+                }
+            }
+            col = 0;
+            start = 0;
+        }
+        for (int i = 0; i < ioPairs; i++) {
+            getline(inFile, line);
+            line += "\n";
+            for (int j = 0; j < line.size(); j++) {
+                if (line[j] == ' ' || line[j] == '\n') {
+                    string token = line.substr(start, j - start);
+                    cout << token << endl;
+                    //nNetwork->hiddenLayer.w[i][col] = stof(line.substr(start, j - start));
+                    start = j;
+                    col++;
+                }
+            }
+            col = 0;
+            start = 0;
+        }
+        inFile.close();
+    }
+    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof()) {
+        inFile.close();
+    }
+    else {
+        inFile.close();
+    }
 }
 //PRIVATE FUNCTIONS
 
@@ -285,7 +334,6 @@ bool NNetwork::loadIOFile() {
     inFile.open(filename);
     if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
     {
-        string line;
         int col = 0;
         for(int i = 0; i < ioPairs; i++){
             getline(inFile, line);
