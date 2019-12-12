@@ -105,7 +105,28 @@ void NNetwork::test() {
 
 //this saves the weights when training is done
 void NNetwork::saveweights() {
-
+    ofstream myfile;
+    myfile.open("networkWeights.txt", ios::in | ios::trunc);
+    if (myfile.is_open()) {
+        for (int i = 0; i < inUnits + 1; i++) {
+            for (int j = 0; j < hidUnits; j++) {
+                myfile << fixed << setprecision(4) << nNetwork->inputLayer.w[i][j];
+                if (j < hidUnits - 1) {
+                    myfile << " ";
+                }
+            }
+            myfile << "\n";
+        }
+        for (int i = 0; i < hidUnits + 1; i++) {
+            for (int j = 0; j < outUnits; j++) {
+                myfile << fixed << setprecision(4) << nNetwork->hiddenLayer.w[i][j];
+                if (j < outUnits - 1) {
+                    myfile << " ";
+                }
+            }
+            myfile << "\n";
+        }
+    }
 }
 
 /* this loads weights from a saved weights file so you can re-load
@@ -349,10 +370,11 @@ void NNetwork::adjustWeights() {
             nNetwork->hiddenLayer.w[i][j] = nNetwork->hiddenLayer.w[i][j] + (learnRate * nNetwork->outputLayer.e[j] * nNetwork->hiddenLayer.x[i]);
         }
     }
-
     for (i = 0; i < inUnits; i++) {
         for (j = 0; j < hidUnits; j++) {
+            //cout << nNetwork->inputLayer.w[i][j] << endl;
             nNetwork->inputLayer.w[i][j] = nNetwork->inputLayer.w[i][j] + (learnRate * nNetwork->hiddenLayer.e[j] * nNetwork->inputLayer.x[i]);
+            //cout << nNetwork->inputLayer.w[i][j] << endl;
         }
     }
 }

@@ -16,6 +16,7 @@
 #define NNETWORK_H
 
 #include <cctype>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>

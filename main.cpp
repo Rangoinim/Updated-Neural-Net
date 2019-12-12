@@ -10,6 +10,9 @@ int main(int argc, char **argv) {
     NNetwork neuralNet;
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();
+    cout << "Saving weights..." << endl;
+    neuralNet.saveweights();
+    cout << "Weights saved" << endl;
     neuralNet.displayInputActivations();
     neuralNet.displayHiddenActivations();
     cout << "now training..." << endl;
