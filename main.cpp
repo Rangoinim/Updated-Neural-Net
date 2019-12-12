@@ -10,4 +10,7 @@ int main(int argc, char **argv) {
     NNetwork neuralNet;
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();
+    neuralNet.displayInputActivations();
+    neuralNet.displayHiddenActivations();
+
 }

@@ -9,7 +9,6 @@ NNetwork::NNetwork() {
     cout.precision(4);
 
     nNetwork = new nNet;
-    inputLength = 1;
 
     loadCfgParams();
     buildInputLayer();
@@ -28,6 +27,7 @@ NNetwork::~NNetwork() {
  * to the functionality of the network.
  */
 void NNetwork::displayInputLayerWeights() {
+    cout << "Input Layer Weights" << endl;
     for (int i=0;i < inUnits+1; i++) {
         for (int j=0;j < hidUnits; j++) {
            cout << nNetwork->inputLayer.w[i][j] << " ";
@@ -36,6 +36,7 @@ void NNetwork::displayInputLayerWeights() {
     }
 }
 void NNetwork::displayHiddenLayerWeights() {
+    cout << "Hidden Layer Weights" << endl;
     for (int i=0;i < hidUnits+1; i++) {
         for (int j=0;j < outUnits; j++) {
             cout << nNetwork->hiddenLayer.w[i][j] << " ";
@@ -44,10 +45,19 @@ void NNetwork::displayHiddenLayerWeights() {
     }
 }
 void NNetwork::displayInputActivations() {
-
+    cout << "Input Activations" << endl;
+    for (int i=0; i < inUnits+1; i++) {
+        cout << nNetwork->inputLayer.x[i] << " ";
+    }
+    cout << endl;
 }
-void NNetwork::displayHiddenActivations() {
 
+void NNetwork::displayHiddenActivations() {
+    cout << "Hidden Activations" << endl;
+    for (int i=0; i < hidUnits+1; i++) {
+        cout << nNetwork->hiddenLayer.x[i] << " ";
+    }
+    cout << endl;
 }
 void NNetwork::displayOutputActivations() {
 
@@ -58,53 +68,17 @@ void NNetwork::displayTrainingInput() {
 void NNetwork::displayTrainingOutput() {
 
 }
-bool NNetwork::loadIOFile() {
-    string line, token;
-    ifstream inFile;
-    inFile.open(filename);
-    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
-    {
-        string line;
-        int col = 0;
-        for(int i = 0; i < ioPairs; i++){
-            getline(inFile, line);
-            for(int j = 0; j < line.size(); j++){
-                if(line[j] != ' '){
-                    inputData[i][col] = line[j] - '0';
-                    cout << inputData[i][col] << " ";
-                    col++;
-                }
-            }
-            col = 0;
-            cout << endl;
-        }
-        for(int i = 0; i < ioPairs; i++){
-            getline(inFile, line);
-            for(int j = 0; j < line.size(); j++){
-                if(line[j] != ' '){
-                    outputData[i][col] = line[j] - '0';
-                    cout << outputData[i][col] << " ";
-                    col++;
-                }
-            }
-            col = 0;
-            cout << endl;
-        }
-        inFile.close();
-    }
-    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof())
-    {
-        inFile.close();
-    }
-    else
-    {
-        inFile.close();
-    }
-    return false;
-}
 
 //this calls all the private training methods
 void NNetwork::train() {
+//    for (int i=0; i < maxEpoch; i++) {
+//        for (int j=0; j < ioPairs; j++) {
+//            assignActivatons(j);
+//            propigateActivations();
+//            computeErrors(j);
+//            adjustWeights();
+//        }
+//    }
 
 }
 
@@ -218,27 +192,31 @@ void NNetwork::buildInputLayer() {
         nNetwork->inputLayer.w[i] = new float[hidUnits];
     }
     //bias node
-    nNetwork->inputLayer.x[inUnits] = 1.0;
+    for (int i=0; i < inUnits+1; i++) {
+        nNetwork->inputLayer.x[i] = 1.0;
+    }
     for (int i=0;i < inUnits+1; i++) {
         for (int j=0; j < hidUnits; j++) {
             nNetwork->inputLayer.w[i][j] = randomWeight();
-            cout << nNetwork->inputLayer.w[i][j] << endl;
+            //cout << nNetwork->inputLayer.w[i][j] << endl;
         }
     }
 }
 void NNetwork::buildHiddenLayer() {
-    nNetwork->hiddenLayer.x = new float[hidUnits+1];
-    nNetwork->hiddenLayer.w = new float*[hidUnits+1];
-    nNetwork->hiddenLayer.e = new float[hidUnits+1];
-    for (int i=0;i < hidUnits+1; i++) {
+    nNetwork->hiddenLayer.x = new float[hidUnits + 1];
+    nNetwork->hiddenLayer.w = new float *[hidUnits + 1];
+    nNetwork->hiddenLayer.e = new float[hidUnits + 1];
+    for (int i = 0; i < hidUnits + 1; i++) {
         nNetwork->hiddenLayer.w[i] = new float[outUnits];
     }
     //bias node
-    nNetwork->hiddenLayer.x[hidUnits] = 1.0;
-    for (int i=0;i < hidUnits+1; i++) {
-        for (int j=0; j < outUnits; j++) {
+    for (int i = 0; i < hidUnits + 1; i++) {
+        nNetwork->hiddenLayer.x[i] = 1.0;
+    }
+    for (int i = 0; i < hidUnits + 1; i++) {
+        for (int j = 0; j < outUnits; j++) {
             nNetwork->hiddenLayer.w[i][j] = randomWeight();
-            cout << nNetwork->hiddenLayer.w[i][j] << endl;
+            //cout << nNetwork->hiddenLayer.w[i][j] << endl;
         }
     }
 }
@@ -248,29 +226,79 @@ void NNetwork::buildOutputLayer() {
 }
 void NNetwork::buildIOData() {
     scanFile();
-    loadIOFile();
-    inputData = new float*[ioPairs];
-    for (int i=0; i < ioPairs; i++) {
+    inputData = new float *[ioPairs];
+    for (int i = 0; i < ioPairs; i++) {
         inputData[i] = new float[numInput];
     }
-    outputData = new float*[ioPairs];
-    for (int i=0; i < ioPairs; i++) {
+    outputData = new float *[ioPairs];
+    for (int i = 0; i < ioPairs; i++) {
         outputData[i] = new float[numOutput];
     }
-
+    if (loadIOFile()) {
+        cout << "you did it" << endl;
+    }
+    else {
+        cout << "uh oh" << endl;
+    }
+}
+bool NNetwork::loadIOFile() {
+    bool success = false;
+    string line;
+    ifstream inFile;
+    inFile.open(filename);
+    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
+    {
+        string line;
+        int col = 0;
+        for(int i = 0; i < ioPairs; i++){
+            getline(inFile, line);
+            for(int j = 0; j < line.size(); j++){
+                if(line[j] != ' '){
+                    inputData[i][col] = line[j] - '0';
+                    //cout << inputData[i][col] << " ";
+                    col++;
+                }
+            }
+            col = 0;
+            //cout << endl;
+        }
+        for(int i = 0; i < ioPairs; i++){
+            getline(inFile, line);
+            for(int j = 0; j < line.size(); j++){
+                if(line[j] != ' '){
+                    outputData[i][col] = line[j] - '0';
+                    //cout << outputData[i][col] << " ";
+                    col++;
+                }
+            }
+            col = 0;
+            //cout << endl;
+        }
+        inFile.close();
+        success = true;
+    }
+    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof())
+    {
+        inFile.close();
+    }
+    else
+    {
+        inFile.close();
+    }
+    return success;
 }
 
 /* training methods used in train(). assignActivatons and propigateActivations
    are also used in the test() method. depending on your implementation,
    compute errors may also be used in the test method, but do not use
    adjustWeights in the test method. */
-void NNetwork::assignActivatons(int) {
-
+void NNetwork::assignActivatons(int j) {
+    
 }
 void NNetwork::propigateActivations() {
 
 }
-void NNetwork::computeErrors(int) {
+void NNetwork::computeErrors(int j) {
 
 }
 void NNetwork::adjustWeights() {

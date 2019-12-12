@@ -103,8 +103,6 @@ public:
     void displayTrainingInput();
     void displayTrainingOutput();
 
-    bool loadIOFile();
-
     //this calls all the private training methods
     void train();
 
@@ -128,7 +126,7 @@ private:
 
     // basic data for the network. these are initialized in loadCfgParams()
     // or in your constructor or however you want to do it.
-    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch, numInput, numOutput, inputLength;
+    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch, numInput, numOutput;
     float off, on;
     float offSoft, onSoft;
     float learnRate;
@@ -151,6 +149,7 @@ private:
     void buildHiddenLayer();
     void buildOutputLayer();
     void buildIOData();
+    bool loadIOFile();
 
     /* training methods used in train(). assignActivatons and propigateActivations
        are also used in the test() method. depending on your implementation,
