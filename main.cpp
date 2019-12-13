@@ -1,21 +1,20 @@
-//
-// Created by Cory Munselle on 11/26/2019.
-//
+/***********************************************************
+Name: Cory Munselle
+Assignment: Final
+Purpose: Demonstrates proper functionality of the neural network
+Notes:
+***********************************************************/
 #include "main.h"
 
 int main(int argc, char **argv) {
-    if (argc > 1) {
-        filename = argv[1];
-        }
+    cout << "Creating the network..." << endl;
     NNetwork neuralNet;
+    cout << "Network created" << endl;
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();
 //    cout << "Loading weights..." << endl;
 //    neuralNet.loadweights();
 //    cout << "Weights loaded" << endl;
-//    cout << "Saving weights..." << endl;
-//    neuralNet.saveweights();
-//    cout << "Weights saved" << endl;
 //    neuralNet.displayInputLayerWeights();
 //    neuralNet.displayHiddenLayerWeights();
     neuralNet.displayInputActivations();
@@ -27,6 +26,10 @@ int main(int argc, char **argv) {
     cout << "Now testing..." << endl;
     neuralNet.test();
     cout << "Testing complete" << endl;
+
+    cout << "Saving weights..." << endl;
+    neuralNet.saveweights();
+    cout << "Weights saved" << endl;
 
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();

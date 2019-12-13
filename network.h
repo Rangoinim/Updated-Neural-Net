@@ -37,22 +37,6 @@ using namespace std;
  * you need to deduce that number from the data file itself.
  */
 
-//you may or may not need these two
-//#define ON 1.0
-//#define OFF 0.0
-
-//you may or may not need these two
-//#define OFFSOFT 0.1
-//#define ONSOFT 0.9
-
-/*struct cfgParams {
-    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch;
-    float off, on;
-    float offSoft, onSoft;
-    float learnRate;
-    float ee;
-};*/
-
 /* input layer consisting of activations x (neurons) and weights w
    to the hidden layer. these are created as pointers that will be allocated
  * as 1 and 2 dimensional arrays. */
@@ -144,12 +128,12 @@ private:
 
     // set-up methods to create and initialize the network and data
     void scanFile();
-    float randomWeight();
+    static float randomWeight();
     void loadCfgParams();
     void buildInputLayer();
     void buildHiddenLayer();
     void buildOutputLayer();
-    void buildIOData();
+    void buistatic ldIOData();
     bool loadIOFile();
 
     /* training methods used in train(). assignActivatons and propigateActivations
