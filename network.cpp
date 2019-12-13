@@ -100,7 +100,12 @@ void NNetwork::train() {
 
 //this loads the validation set and tests the trained network
 void NNetwork::test() {
-
+    for (int i=0; i < ioPairs; i++) {
+        assignActivatons(i);
+        propigateActivations();
+        displayOutputActivations();
+        computeErrors(i);
+    }
 }
 
 //this saves the weights when training is done
@@ -133,54 +138,58 @@ void NNetwork::saveweights() {
 /* this loads weights from a saved weights file so you can re-load
  a trained network and use it, instead of retraining.*/
 void NNetwork::loadweights() {
-    string line;
-    ifstream inFile;
-    inFile.open("networkWeights.txt");
-    int start = 0;
+    ifstream weightsFile;
+    weightsFile.open("networkWeights.txt");
+    string line, temp;
     int col = 0;
-    cout << "I'm knocking on the door" << endl;
-    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof()) {
-        cout << "I'm inside" << endl;
-        for (int i = 0; i < ioPairs; i++) {
-            getline(inFile, line);
-            line += "\n";
-            cout << line << endl;
+    if (weightsFile.is_open() && weightsFile.peek() != ifstream::traits_type::eof()) {
+        for (int i = 0; i < inUnits + 1; i++) {
+            getline(weightsFile, line);
             for (int j = 0; j < line.size(); j++) {
-                cout << "j is " << j << endl;
-                if (line[j] == ' ' || line[j] == '\n') {
-                    cout << "newline or space found in index " << j << endl;
-                    string token = line.substr(start, j - start);
-                    cout << token << endl;
-                    //nNetwork->inputLayer.w[i][col] = stof(line.substr(start, j - start));
-                    start = j;
+                if (line[j] != ' ') {
+                    temp += line[j];
+                    if (j == line.size() - 1) {
+                        nNetwork->inputLayer.w[i][col] = stof(temp);
+                        temp.clear();
+                        col++;
+                    }
+                } else {
+                    nNetwork->inputLayer.w[i][col] = stof(temp);
+                    temp.clear();
                     col++;
                 }
             }
             col = 0;
-            start = 0;
+            temp.clear();
         }
-        for (int i = 0; i < ioPairs; i++) {
-            getline(inFile, line);
-            line += "\n";
+        col = 0;
+        temp.clear();
+        for (int i = 0; i < hidUnits + 1; i++) {
+            getline(weightsFile, line);
             for (int j = 0; j < line.size(); j++) {
-                if (line[j] == ' ' || line[j] == '\n') {
-                    string token = line.substr(start, j - start);
-                    cout << token << endl;
-                    //nNetwork->hiddenLayer.w[i][col] = stof(line.substr(start, j - start));
-                    start = j;
+                if (line[j] != ' ') {
+                    temp += line[j];
+                    if (j == line.size() - 1) {
+                        nNetwork->hiddenLayer.w[i][col] = stof(temp);
+                        temp.clear();
+                        col++;
+                    }
+                } else {
+                    nNetwork->hiddenLayer.w[i][col] = stof(temp);
+                    temp.clear();
                     col++;
                 }
             }
             col = 0;
-            start = 0;
+            temp.clear();
         }
-        inFile.close();
+        weightsFile.close();
     }
-    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof()) {
-        inFile.close();
+    else if (weightsFile.is_open() && weightsFile.peek() == ifstream::traits_type::eof()) {
+        weightsFile.close();
     }
     else {
-        inFile.close();
+        weightsFile.close();
     }
 }
 //PRIVATE FUNCTIONS
@@ -383,23 +392,27 @@ void NNetwork::assignActivatons(int j) {
     }
 }
 void NNetwork::propigateActivations() {
-    for (int i=0;i < inUnits; i++) {
-        for (int j=0; j < hidUnits+1; j++) {
-            nNetwork->hiddenLayer.x[i] += (nNetwork->inputLayer.x[i] * nNetwork->inputLayer.w[i][j]);
+    float sum = 0.0;
+    for (int i=0;i < hidUnits; i++) {
+        for (int j=0; j < inUnits+1; j++) {
+            sum = sum + (nNetwork->inputLayer.x[j] * nNetwork->inputLayer.w[j][i]);
         }
         //sigmoid me captain
-        nNetwork->hiddenLayer.x[i] = 1.0 / (1.0 + pow(ee, -(nNetwork->hiddenLayer.x[i])));
+        nNetwork->hiddenLayer.x[i] = 1.0 / (1.0 + pow(ee, -sum));
+        sum = 0.0;
     }
+    sum = 0.0;
     for (int i=0; i < outUnits; i++) {
         for (int j=0; j < hidUnits+1; j++) {
-            nNetwork->outputLayer.x[i] += (nNetwork->hiddenLayer.x[j] * nNetwork->hiddenLayer.w[i][j]);
+            sum = sum + (nNetwork->hiddenLayer.x[j] * nNetwork->hiddenLayer.w[j][i]);
         }
         //sigmoid round two
-        nNetwork->outputLayer.x[i] = 1.0 / (1.0 + pow(ee, -(nNetwork->outputLayer.x[i])));
+        nNetwork->outputLayer.x[i] = 1.0 / (1.0 + pow(ee, -sum));
+        sum = 0.0;
     }
 }
 void NNetwork::computeErrors(int current) {
-    int sum = 0;
+    float sum = 0.0;
     for (int i=0; i < outUnits; i++) {
         nNetwork->outputLayer.e[i] = nNetwork->outputLayer.x[i] * ((1.0 - nNetwork->outputLayer.x[i]) * (outputData[current][i] - nNetwork->outputLayer.x[i]));
     }
@@ -408,18 +421,17 @@ void NNetwork::computeErrors(int current) {
             sum = sum + nNetwork->outputLayer.e[i] * nNetwork->hiddenLayer.w[j][i];
         }
         nNetwork->hiddenLayer.e[j] = (nNetwork->hiddenLayer.x[j] * (1 - nNetwork->hiddenLayer.x[j])) * sum;
+        sum = 0.0;
     }
 }
 void NNetwork::adjustWeights() {
-    int i, j;
-
-    for (i = 0; i < hidUnits+1; i++) {
-        for (j = 0; j < outUnits; j++) {
+    for (int i = 0; i < hidUnits+1; i++) {
+        for (int j = 0; j < outUnits; j++) {
             nNetwork->hiddenLayer.w[i][j] = nNetwork->hiddenLayer.w[i][j] + (learnRate * nNetwork->outputLayer.e[j] * nNetwork->hiddenLayer.x[i]);
         }
     }
-    for (i = 0; i < inUnits; i++) {
-        for (j = 0; j < hidUnits; j++) {
+    for (int i = 0; i < inUnits; i++) {
+        for (int j = 0; j < hidUnits; j++) {
             //cout << nNetwork->inputLayer.w[i][j] << endl;
             nNetwork->inputLayer.w[i][j] = nNetwork->inputLayer.w[i][j] + (learnRate * nNetwork->hiddenLayer.e[j] * nNetwork->inputLayer.x[i]);
             //cout << nNetwork->inputLayer.w[i][j] << endl;

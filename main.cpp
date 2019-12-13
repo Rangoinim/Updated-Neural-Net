@@ -10,21 +10,26 @@ int main(int argc, char **argv) {
     NNetwork neuralNet;
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();
-    cout << "Loading weights..." << endl;
-    neuralNet.loadweights();
-    cout << "Weights loaded" << endl;
+//    cout << "Loading weights..." << endl;
+//    neuralNet.loadweights();
+//    cout << "Weights loaded" << endl;
 //    cout << "Saving weights..." << endl;
 //    neuralNet.saveweights();
 //    cout << "Weights saved" << endl;
-    neuralNet.displayInputLayerWeights();
-    neuralNet.displayHiddenLayerWeights();
-//    neuralNet.displayInputActivations();
-//    neuralNet.displayHiddenActivations();
-//    cout << "now training..." << endl;
-//    neuralNet.train();
-//    cout << "training complete" << endl;
 //    neuralNet.displayInputLayerWeights();
 //    neuralNet.displayHiddenLayerWeights();
+    neuralNet.displayInputActivations();
+    neuralNet.displayHiddenActivations();
+    cout << "now training..." << endl;
+    neuralNet.train();
+    cout << "training complete" << endl;
+
+    cout << "Now testing..." << endl;
+    neuralNet.test();
+    cout << "Testing complete" << endl;
+
+    neuralNet.displayInputLayerWeights();
+    neuralNet.displayHiddenLayerWeights();
 //    neuralNet.displayInputActivations();
 //    neuralNet.displayHiddenActivations();
 //    neuralNet.displayOutputActivations();
