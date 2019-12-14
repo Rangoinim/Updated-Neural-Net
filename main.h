@@ -1,6 +1,9 @@
-//
-// Created by Cory Munselle on 11/26/2019.
-//
+/***********************************************************
+Name: Cory Munselle
+Assignment: Final
+Purpose: Header file for main.cpp
+Notes:
+***********************************************************/
 
 #ifndef FINALPROJECT_MAIN_H
 #define FINALPROJECT_MAIN_H

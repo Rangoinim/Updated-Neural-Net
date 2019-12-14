@@ -1,3 +1,10 @@
+/***********************************************************
+Name: Cory Munselle
+Assignment: Final
+Purpose: header file for network.cpp
+Notes:
+***********************************************************/
+
 /* This is a sample header file for a neural network. A few things
  * to note about this file...
  * *** It is only a simple proof-of-concept header file. It does not conform
@@ -111,7 +118,7 @@ private:
 
     // basic data for the network. these are initialized in loadCfgParams()
     // or in your constructor or however you want to do it.
-    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch, numInput, numOutput;
+    int inUnits, hidUnits, outUnits, ioPairs, maxEpoch, numInput, numOutput, numCorrect;
     float off, on;
     float offSoft, onSoft;
     float learnRate;
@@ -133,8 +140,9 @@ private:
     void buildInputLayer();
     void buildHiddenLayer();
     void buildOutputLayer();
-    void buistatic ldIOData();
+    void buildIOData();
     bool loadIOFile();
+    void checkAccuracy(int);
 
     /* training methods used in train(). assignActivatons and propigateActivations
        are also used in the test() method. depending on your implementation,

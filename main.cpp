@@ -17,8 +17,8 @@ int main(int argc, char **argv) {
 //    cout << "Weights loaded" << endl;
 //    neuralNet.displayInputLayerWeights();
 //    neuralNet.displayHiddenLayerWeights();
-    neuralNet.displayInputActivations();
-    neuralNet.displayHiddenActivations();
+//    neuralNet.displayInputActivations();
+//    neuralNet.displayHiddenActivations();
     cout << "now training..." << endl;
     neuralNet.train();
     cout << "training complete" << endl;
@@ -27,9 +27,9 @@ int main(int argc, char **argv) {
     neuralNet.test();
     cout << "Testing complete" << endl;
 
-    cout << "Saving weights..." << endl;
-    neuralNet.saveweights();
-    cout << "Weights saved" << endl;
+//    cout << "Saving weights..." << endl;
+//    neuralNet.saveweights();
+//    cout << "Weights saved" << endl;
 
     neuralNet.displayInputLayerWeights();
     neuralNet.displayHiddenLayerWeights();

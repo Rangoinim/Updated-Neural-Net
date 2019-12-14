@@ -9,6 +9,7 @@ NNetwork::NNetwork() {
     cout.precision(4);
 
     nNetwork = new nNet;
+    numCorrect = 0;
 
     loadCfgParams();
     buildInputLayer();
@@ -104,7 +105,13 @@ void NNetwork::test() {
         assignActivatons(i);
         propigateActivations();
         displayOutputActivations();
+        checkAccuracy(i);
         computeErrors(i);
+    }
+    if (numCorrect == ioPairs) {
+        cout << "All " << ioPairs << " activations are correct. Saving weights..." << endl;
+        saveweights();
+        cout << "Weights saved." << endl;
     }
 }
 
@@ -338,48 +345,66 @@ void NNetwork::buildIOData() {
 }
 bool NNetwork::loadIOFile() {
     bool success = false;
-    string line;
+    string line, token;
+    int col = 0;
     ifstream inFile;
     inFile.open(filename);
-    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
-    {
-        int col = 0;
-        for(int i = 0; i < ioPairs; i++){
+    if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof()) {
+        for (int i = 0; i < ioPairs; i++) {
             getline(inFile, line);
-            for(int j = 0; j < line.size(); j++){
-                if(line[j] != ' '){
-                    inputData[i][col] = line[j] - '0';
-                    //cout << inputData[i][col] << " ";
+            for (int j = 0; j < line.size(); j++) {
+                if (line[j] != ' ') {
+                    token += line[j];
+                    if (j == line.size() - 1) {
+                        inputData[i][col] = stof(token);
+                        token.clear();
+                        col++;
+                    }
+                } else {
+                    inputData[i][col] = stof(token);
+                    token.clear();
                     col++;
                 }
             }
             col = 0;
-            //cout << endl;
+            token.clear();
         }
-        for(int i = 0; i < ioPairs; i++){
+        col = 0;
+        token.clear();
+        for (int i = 0; i < ioPairs; i++) {
             getline(inFile, line);
-            for(int j = 0; j < line.size(); j++){
-                if(line[j] != ' '){
-                    outputData[i][col] = line[j] - '0';
-                    //cout << outputData[i][col] << " ";
+            for (int j = 0; j < line.size(); j++) {
+                if (line[j] != ' ') {
+                    token += line[j];
+                    if (j == line.size() - 1) {
+                        outputData[i][col] = stof(token);
+                        token.clear();
+                        col++;
+                    }
+                } else {
+                    outputData[i][col] = stof(token);
+                    token.clear();
                     col++;
                 }
             }
             col = 0;
-            //cout << endl;
+            token.clear();
         }
         inFile.close();
-        success = true;
     }
-    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof())
-    {
+    else if (inFile.is_open() && inFile.peek() == ifstream::traits_type::eof()) {
         inFile.close();
     }
-    else
-    {
+    else {
         inFile.close();
     }
     return success;
+}
+
+void NNetwork::checkAccuracy(int i) {
+    if (nNetwork->outputLayer.x[i] >= onSoft || nNetwork->outputLayer.x[i] <= offSoft) {
+        numCorrect++;
+    }
 }
 
 /* training methods used in train(). assignActivatons and propigateActivations
