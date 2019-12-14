@@ -1,6 +1,12 @@
-//
-// Created by Cory Munselle on 12/8/2019.
-//
+/***********************************************************
+Name: Cory Munselle
+Assignment: Final
+Purpose: Is the network itself, containing all of the necessary math and
+ trickery required to get this thing working.
+Notes: Huge thanks to you, Professor Katrompas. Without your assistance I would have
+ been banging my head against the wall trying to figure this out. Also a big thanks
+ to Diego for collaborating with me on this assignment so we could both finish it faster.
+***********************************************************/
 #include "network.h"
 
 NNetwork::NNetwork() {
@@ -10,12 +16,21 @@ NNetwork::NNetwork() {
 
     nNetwork = new nNet;
     numCorrect = 0;
+    earlyComplete = false;
+    weightsfn = "Weights.dat";
 
+    cout << "Loading configuration parameters from config.cfg...";
     loadCfgParams();
+    cout << "\tDone" << endl;
+    cout << "Building neural network layers...";
     buildInputLayer();
     buildHiddenLayer();
     buildOutputLayer();
+    cout << "\tDone" << endl;
+    cout << "Loading " << filename << "...";
     buildIOData();
+    cout << "\tDone" << endl;
+    findWeightsFile();
 }
 
 NNetwork::~NNetwork() {
@@ -35,6 +50,7 @@ void NNetwork::displayInputLayerWeights() {
         }
         cout << endl;
     }
+    cout << endl;
 }
 void NNetwork::displayHiddenLayerWeights() {
     cout << "Hidden Layer Weights" << endl;
@@ -44,12 +60,14 @@ void NNetwork::displayHiddenLayerWeights() {
         }
         cout << endl;
     }
+    cout << endl;
 }
 void NNetwork::displayInputActivations() {
     cout << "Input Activations" << endl;
     for (int i=0; i < inUnits+1; i++) {
         cout << nNetwork->inputLayer.x[i] << " ";
     }
+    cout << endl;
     cout << endl;
 }
 
@@ -59,12 +77,14 @@ void NNetwork::displayHiddenActivations() {
         cout << nNetwork->hiddenLayer.x[i] << " ";
     }
     cout << endl;
+    cout << endl;
 }
 void NNetwork::displayOutputActivations() {
     cout << "Output Activations" << endl;
     for (int i=0; i < outUnits; i++) {
         cout << nNetwork->outputLayer.x[i] << " ";
     }
+    cout << endl;
     cout << endl;
 }
 void NNetwork::displayTrainingInput() {
@@ -75,6 +95,7 @@ void NNetwork::displayTrainingInput() {
         }
         cout << endl;
     }
+    cout << endl;
 }
 void NNetwork::displayTrainingOutput() {
     cout << "Training Output" << endl;
@@ -84,19 +105,35 @@ void NNetwork::displayTrainingOutput() {
         }
         cout << endl;
     }
+    cout << endl;
+}
+void NNetwork::earlyCompleteMessage() {
+    cout << "=======================================================================================================================" << endl;
+    cout << "The network has reached the correct answer in a shorter number of epochs than specified, so it has terminated early." << endl;
+    cout << "It finished in " << maxEpoch << " epochs, which is " << contents[3] - maxEpoch << " less than needed. Moving on to testing..." << endl;
+    cout << "=======================================================================================================================" << endl;
 }
 
 //this calls all the private training methods
 void NNetwork::train() {
     for (int i=0; i < maxEpoch; i++) {
-        for (int j=0; j < ioPairs; j++) {
-            assignActivatons(j);
-            propigateActivations();
-            computeErrors(j);
-            adjustWeights();
+        if (numCorrect != ioPairs) {
+            numCorrect = 0;
+            for (int j = 0; j < ioPairs; j++) {
+                assignActivatons(j);
+                propigateActivations();
+                computeErrors(j);
+                checkAccuracy();
+                adjustWeights();
+            }
+        }
+        else {
+            maxEpoch = i;
+            earlyComplete = true;
+            earlyCompleteMessage();
         }
     }
-
+    numCorrect = 0;
 }
 
 //this loads the validation set and tests the trained network
@@ -105,7 +142,7 @@ void NNetwork::test() {
         assignActivatons(i);
         propigateActivations();
         displayOutputActivations();
-        checkAccuracy(i);
+        checkAccuracy();
         computeErrors(i);
     }
     if (numCorrect == ioPairs) {
@@ -118,7 +155,7 @@ void NNetwork::test() {
 //this saves the weights when training is done
 void NNetwork::saveweights() {
     ofstream myfile;
-    myfile.open("networkWeights.txt", ios::in | ios::trunc);
+    myfile.open(weightsfn, ios::in | ios::trunc);
     if (myfile.is_open()) {
         for (int i = 0; i < inUnits + 1; i++) {
             for (int j = 0; j < hidUnits; j++) {
@@ -144,11 +181,12 @@ void NNetwork::saveweights() {
 
 /* this loads weights from a saved weights file so you can re-load
  a trained network and use it, instead of retraining.*/
-void NNetwork::loadweights() {
-    ifstream weightsFile;
-    weightsFile.open("networkWeights.txt");
+bool NNetwork::loadweights() {
+    bool success = false;
     string line, temp;
     int col = 0;
+    ifstream weightsFile;
+    weightsFile.open(weightsfn);
     if (weightsFile.is_open() && weightsFile.peek() != ifstream::traits_type::eof()) {
         for (int i = 0; i < inUnits + 1; i++) {
             getline(weightsFile, line);
@@ -191,6 +229,7 @@ void NNetwork::loadweights() {
             temp.clear();
         }
         weightsFile.close();
+        success = true;
     }
     else if (weightsFile.is_open() && weightsFile.peek() == ifstream::traits_type::eof()) {
         weightsFile.close();
@@ -198,6 +237,7 @@ void NNetwork::loadweights() {
     else {
         weightsFile.close();
     }
+    return success;
 }
 //PRIVATE FUNCTIONS
 
@@ -247,10 +287,9 @@ float NNetwork::randomWeight() {
 }
 
 void NNetwork::loadCfgParams() {
-    vector<float> contents;
     string line;
     ifstream inFile;
-    inFile.open("config.txt");
+    inFile.open("config.cfg");
     if (inFile.is_open() && inFile.peek() != ifstream::traits_type::eof())
     {
         while (getline(inFile, line))
@@ -284,7 +323,6 @@ void NNetwork::loadCfgParams() {
     onSoft = contents[7];
     learnRate = contents[8];
     ee = contents[9];
-    //cout << inUnits << ", " << hidUnits << ", " << outUnits << ", " << ioPairs << endl;
 }
 
 void NNetwork::buildInputLayer() {
@@ -295,12 +333,11 @@ void NNetwork::buildInputLayer() {
     }
     //bias node
     for (int i=0; i < inUnits+1; i++) {
-        nNetwork->inputLayer.x[i] = 1.0;
+        nNetwork->inputLayer.x[i] = on;
     }
     for (int i=0;i < inUnits+1; i++) {
         for (int j=0; j < hidUnits; j++) {
             nNetwork->inputLayer.w[i][j] = randomWeight();
-            //cout << nNetwork->inputLayer.w[i][j] << endl;
         }
     }
 }
@@ -313,12 +350,11 @@ void NNetwork::buildHiddenLayer() {
     }
     //bias node
     for (int i = 0; i < hidUnits + 1; i++) {
-        nNetwork->hiddenLayer.x[i] = 1.0;
+        nNetwork->hiddenLayer.x[i] = on;
     }
     for (int i = 0; i < hidUnits + 1; i++) {
         for (int j = 0; j < outUnits; j++) {
             nNetwork->hiddenLayer.w[i][j] = randomWeight();
-            //cout << nNetwork->hiddenLayer.w[i][j] << endl;
         }
     }
 }
@@ -336,15 +372,9 @@ void NNetwork::buildIOData() {
     for (int i = 0; i < ioPairs; i++) {
         outputData[i] = new float[numOutput];
     }
-    if (loadIOFile()) {
-        cout << "you did it" << endl;
-    }
-    else {
-        cout << "uh oh" << endl;
-    }
+    loadIOFile();
 }
-bool NNetwork::loadIOFile() {
-    bool success = false;
+void NNetwork::loadIOFile() {
     string line, token;
     int col = 0;
     ifstream inFile;
@@ -398,12 +428,29 @@ bool NNetwork::loadIOFile() {
     else {
         inFile.close();
     }
-    return success;
 }
 
-void NNetwork::checkAccuracy(int i) {
-    if (nNetwork->outputLayer.x[i] >= onSoft || nNetwork->outputLayer.x[i] <= offSoft) {
+void NNetwork::checkAccuracy() {
+    int start = 0;
+    if ((nNetwork->outputLayer.x[start] > onSoft && nNetwork->outputLayer.x[start] < on) || (nNetwork->outputLayer.x[start] < offSoft && nNetwork->outputLayer.x[start] > off)) {
         numCorrect++;
+    }
+}
+
+//void NNetwork::mseCalc(int current) {
+//    if (calcMSE == true) {
+//        for (int i=0; i < ioPairs; i++) {
+//            mseError[current] = (outputData[current] - nNetwork->outputLayer.x[current]);
+//        }
+//    }
+//}
+
+void NNetwork::findWeightsFile() {
+    int start = 0;
+    for (int i=0; i < filename.size(); i++) {
+        if (ispunct(filename[i])) {
+            weightsfn.insert(start, filename, start, i);
+        }
     }
 }
 
@@ -457,10 +504,10 @@ void NNetwork::adjustWeights() {
     }
     for (int i = 0; i < inUnits; i++) {
         for (int j = 0; j < hidUnits; j++) {
-            //cout << nNetwork->inputLayer.w[i][j] << endl;
             nNetwork->inputLayer.w[i][j] = nNetwork->inputLayer.w[i][j] + (learnRate * nNetwork->hiddenLayer.e[j] * nNetwork->inputLayer.x[i]);
-            //cout << nNetwork->inputLayer.w[i][j] << endl;
         }
     }
 }
+
+
 

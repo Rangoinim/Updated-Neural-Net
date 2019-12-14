@@ -94,6 +94,7 @@ public:
     void displayOutputActivations();
     void displayTrainingInput();
     void displayTrainingOutput();
+    void earlyCompleteMessage();
 
     //this calls all the private training methods
     void train();
@@ -106,7 +107,7 @@ public:
 
     /* this loads weights from a saved weights file so you can re-load
      a trained network and use it, instead of retraining.*/
-    void loadweights();
+    bool loadweights();
 
 
 private:
@@ -124,8 +125,18 @@ private:
     float learnRate;
     float ee;
 
+    // Contains the parameters from the config file for loading into the above variables
+    vector<float> contents;
+
     // Filename for the data file that the program is going to use
     string filename;
+
+    // Filename of the weights file to save to or load from
+    string weightsfn;
+
+    // Set to true if the accuracy check is flipped before the epochs complete
+    bool earlyComplete;
+
     /* holds the data set for training. these are initialized in buildIOData()
        and loaded in loadIOFile() */
     float **inputData, **outputData;
@@ -141,8 +152,11 @@ private:
     void buildHiddenLayer();
     void buildOutputLayer();
     void buildIOData();
-    bool loadIOFile();
-    void checkAccuracy(int);
+    void loadIOFile();
+    void checkAccuracy();
+    // I tried getting Means Squared Error calculated, but it's 3 AM and my brain hurts
+    //void mseCalc(int);
+    void findWeightsFile();
 
     /* training methods used in train(). assignActivatons and propigateActivations
        are also used in the test() method. depending on your implementation,
